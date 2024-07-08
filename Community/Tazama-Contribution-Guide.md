@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: Apache-2.0 -->
+ <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 # Contribution Guide
 
@@ -30,7 +30,18 @@
   - [5. Making and Submitting Contributions](#5-making-and-submitting-contributions)
     - [5.1 Forking and Cloning the Repository](#51-forking-and-cloning-the-repository)
     - [5.2 Making Changes](#52-making-changes)
-      - [5.2.1 Definition of done](#521-definition-of-done)
+      - [5.2.1 Tazama coding practices](#521-tazama-coding-practices)
+        - [5.2.1.1. Linting \& Linting rules](#5211-linting--linting-rules)
+          - [ESLint Configuration Documentation](#eslint-configuration-documentation)
+          - [Configuration Overview](#configuration-overview)
+          - [Rules Summary](#rules-summary)
+        - [Standard and Plugin Rules](#standard-and-plugin-rules)
+          - [TypeScript Specific Rules](#typescript-specific-rules)
+          - [Stylistic Rules (Custom Plugin)](#stylistic-rules-custom-plugin)
+          - [ESLint Comments Plugin](#eslint-comments-plugin)
+          - [Ignored Files and Directories](#ignored-files-and-directories)
+        - [5.2.1.3. Gather asynchronous requests](#5213-gather-asynchronous-requests)
+      - [5.2.2 Definition of done](#522-definition-of-done)
     - [5.3 Committing Your Changes](#53-committing-your-changes)
     - [5.4 Submitting a Pull Request](#54-submitting-a-pull-request)
     - [5.5 Code Review Process](#55-code-review-process)
@@ -80,14 +91,15 @@ Our product is young; barely out of infancy. We need the help of our fledgling c
 
 Some of those specific areas where we would particularly appreciate help:
 
- - The development of new features.
- - Hunting and squashing bugs in our code, our processes and our documentation.
- - Improving tests and testing.
- - Translation and localization.
- - Implementing Tazama for yourself or others.
- - Creating tutorials and how-to guides.
- - Give a "thumbs up" on issues that are relevant to you.
- - Sponsorship.
+ - The development of new features
+ - Hunting and squashing bugs in our code, our processes and our documentation
+ - Improving tests and testing
+ - Translation and localization
+ - Implementing Tazama for yourself or others
+ - Creating tutorials and how-to guides
+ - Give a "thumbs up" on issues that are relevant to you
+ - Industry knowledge and experience
+ - Sponsorship
 
 ### 1.3 Scope of the Guide
 This contribution guide will take you through the steps to contribute to the Tazama Project and to help your contributions be successfully integrated into the Product.
@@ -439,25 +451,29 @@ The Project organization on GitHub contains both PUBLIC and PRIVATE repositories
 All of our pre-fabricated rule processors, along with their unit tests and default configurations, are hosted in private repositories. That is not to say that they are not also open source software, but we are hosting them in private repositories because they might allow fraudsters and money launderers to reverse engineer the way the system detects fraud and money laundering "out of the box". Any member of our GitHub organization can access the private repositories to implement and work on the rule processors or their tests.
 
 ### 4.2 Finding Something to Work On
-Guide on how to pick issues or features to work on.
+
+There are many ways to contribute to an open-source software project such as Tazama. Tazama is constantly under development as our community works to improve the software. When we encounter tasks that we think might be a good first issue for someone new to the project to undertake, we create the issue in the [`/tazama-project`](https://github.com/frmscoe/tazama-project) repository and tag it with the label: "good first issue". You can click on the [good first issue](https://github.com/frmscoe/tazama-project/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) label to display all the current issues under this label.
+
+If there are currently no issues under this label, feel free to explore the project on your own and identify possible fixes or enhancements. Make sure to submit your feature or bug fix request to the `/tazama-project` repository as a new issue for consideration by the team. It would be good to reach out to us to discuss your issue before you start though, just in case it's something we have already considered.
 
 ### 4.3 Contribution Process Overview
 
 ```mermaid
 flowchart TB
-  A[1. Create Issue] -->|Optional for External Contributors| B[Fork Repository]
-  B -->|Clone to Local Machine| C(Clone Repository)
-  A -->|For Internal Team Members| C
-  C --> D{2. Feature Branch}
-  D -->|Create| E[3. Develop Feature]
-  E --> F{4. Commit Changes}
-  F -->|Push| G[5. Create Pull Request]
-  G -->|Review| H[6. Code Review]
-  H -->|Approve| I{7. Merge PR}
-  I -->|Merge to Dev| J[8. Close Issue]
-  J --> K[9. Deploy to Production]
-  K --> L[10. Monitor & Feedback]
-  H -->|Request Changes| D
+  A[1. Create Issue] -->B{Contributor}
+  B -->|External Contributors| C[Fork Repository]
+  C --> D
+  B -->|Internal Contributors| D(2. Clone Repository)
+  D -->E(3. Create<br>Feature<br>Branch)
+  E -->F[4. Develop Feature]
+  F -->G[5. Commit Changes]
+  G -->I[6. Create Pull Request]
+  I -->J{7. Code Review}
+  J -->|Request Changes| F
+  J -->|Approve| K[8. Merge PR to Dev]
+  K -->L[9. Close Issue]
+  L -->M[10. Release to Main]
+  M -->N[11. Monitor & Feedback]
 ```
 
 [Top](#contribution-guide)
@@ -469,41 +485,130 @@ Instructions on forking and cloning the repository.
 ### 5.2 Making Changes
 Best practices for making changes.
 
-#### 5.2.1 Definition of done
+#### 5.2.1 Tazama coding practices
 
-**Code Complete** - Source code changes are done for all the features in the “to do” list.” Source code has been commented appropriately. [Developer]
+Definition of done includes adhering to the coding practices below:
 
-**Architecture** – All new code conforms to the agreed architecture (*unless agreed otherwise as part of refactoring existing legacy code). [PR Approver]
+>> INDEX here
 
-**Unit testing** - Unit test cases have been created, executed and are working successfully. Follow  [coverage guidelines](/Technical/unit-test-coverage.md). Will create spike where we find some Rule Engine that’s difficult to unit test. [Developer]
+[Linting rules](#5211-linting--linting-rules)
 
-**GitHub CI/CD** - Ensure that all GitHub workflows have completed successfully during PR checks, and that the Newman benchmark results have been presented on the PR as a comment. If you notice any spikes in the benchmark, please report the spike or reevaluate the implemented code, if you are using a Fork to contribute please follow: [contribution guidelines](/Technical/contribution-guidelines.md) [Developer] + [PR Approver]
 
-**Automated Builds** – All code is included in automated builds and any updates to the build scripts have been completed and tested and checked in. Jenkins / CircleCI - Poly vs Mono repo [DevOps]
+##### 5.2.1.1. Linting & Linting rules
 
-**Developer Documentation Ready** – There is sufficient and suitable development documentation in place - Sequence Diagram / Swagger in Confluence (NOT GitHub - security reasons) eventually. [Developer]
+Tazama uses [ESLint](https://eslint.org/) to enforce consistency and specific rules in our use of TypeScript. We have implemented. We implemented the ESLint "[flat config[(https://eslint.org/blog/2022/08/new-config-system-part-2/)" in release 2.0.0 of Tazama.
 
-**Code Documentation** – Electronic documentation has been auto-generated (where available) and has been checked for correctness. Also have sufficient code comments. [Developer] + [PR Approver]
+###### ESLint Configuration Documentation
 
-**Licensing comment** Add the following string as a comment ("SPDX-License-Identifier: Apache-2.0") at the top of every file in the organisation in GitHub that is capable of including a comment i.e. extensions="ts" "js" "env" "template" "eslintignore" "yaml" "properties" "npmrc" "editorconfig" "dockerignore" "gitignore" "prettierignore" "md" "helmignore" "Makefile" "sh" "npmignore" "plantuml" "yml" 
+This document details the ESLint configuration for TypeScript files as specified in the `eslint.config.mjs` file. The configuration integrates multiple plugins to enforce style and quality standards.
 
-**\*Release Notes / Version Control** - TODO Aaron - figure out what greater ML does - check this
+###### Configuration Overview
 
-**Code Refactoring** - Source code has been refactored to make it comprehensive, maintainable and amenable to change (*unless agreed otherwise as part of refactoring existing legacy code). [Developer]
+- **Files Targeted**: 
+  - Applies to all `.ts` files across the project.
 
-**Code Check-in** - Source code is checked in to source code control repository and PR process is followed [Developer]
+- **Plugins Used**: 
+  - Integrates plugins from `eslint-config-love`, `eslint-plugin-eslint-comments`, `@typescript-eslint/eslint-plugin`, and `@stylistic/eslint-plugin`.
 
-**Code & Peer reviews** (pull requests) – These have been carried out and all improvements implemented and tests completed. [Developer] to follow-up and ensure code gets merged in reasonable time [PR Approver]
+- **Parser**: 
+  - Uses `@typescript-eslint/parser` for parsing TypeScript files.
 
-**\*Logging** - Configurable log levels - able to switch on verbose logging for debugging purposes? Error logging - where to? [Developer]
+- **ECMA Version**: 
+  - Configured for ECMAScript 2022 to support modern JavaScript features.
 
-**All acceptance criteria are met and Testing complete** [Developer]
+- **Source Type**: 
+  - Files are treated as ECMAScript modules.
+
+###### Rules Summary
+
+##### Standard and Plugin Rules
+- Inherits rules from `eslint-config-love`.
+- Incorporates recommended rules from `eslint-plugin-eslint-comments`.
+
+###### TypeScript Specific Rules
+- `@typescript-eslint/restrict-template-expressions`: Errors on unsafe usage in template literals.
+- `@typescript-eslint/no-non-null-assertion`: Disabled.
+- `@typescript-eslint/strict-boolean-expressions`: Disabled to allow any type in conditions.
+- `@typescript-eslint/no-explicit-any`: Errors when the `any` type is used, promoting type safety.
+- `@typescript-eslint/no-floating-promises`: Allows floating promises without handling.
+- `@typescript-eslint/no-var-requires`: Permits using `require` statements in TypeScript.
+- `@typescript-eslint/no-use-before-define`: Disabled to allow hoisting.
+- `@typescript-eslint/prefer-optional-chain`: Does not enforce using optional chaining.
+
+###### Stylistic Rules (Custom Plugin)
+- `@stylistic/indent`: Enforces 2 spaces for indentation.
+- `@stylistic/semi`: Requires semicolons at the end of statements, warning level.
+- `@stylistic/quotes`: Enforces single quotes for strings.
+- `@stylistic/quote-props`: Requires quotes around object properties when necessary.
+- `@stylistic/arrow-parens`: Requires parentheses around arrow function arguments.
+
+###### ESLint Comments Plugin
+- `eslint-comments/require-description`: Warns if ESLint directive comments lack a description.
+- `eslint-comments/disable-enable-pair`: Warns to ensure proper use of `eslint-disable` and `eslint-enable` pairs. Sometimes, linting and coding practices collide and a linting override is required to suppress linting alerts over a specific segment of code. While it is possible to override linting for an entire code module, this is not the Tazama way and instead a linting override is expected to only be applied to the specific problematic segment of code via the use of these comment tags above and below the code segment.
+
+###### Ignored Files and Directories
+- **Ignored Locations**: 
+  - `**/build/**` or `**/lib/**` // tsc output directory (project)
+  - `**/node_modules/**`
+  - `**/docs/**`
+  - `**/__tests__/**`
+  - `**/coverage/**` // jest coverage
+  - `**/jest.config.ts` // jest main config
+  - `**/jest.testEnv.ts` // jest env config
+
+This setup ensures a robust framework for maintaining high code quality and consistency in TypeScript projects, leveraging ESLint's core capabilities and additional style rules from external plugins.
+
+
+##### 5.2.1.3. Gather asynchronous requests
+
+When you have multiple asynchronous requests to make, Tazama prefers the requests to operate in parallel using [`Promise.all`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all).
+
+#### 5.2.2 Definition of done
+
+The tasks below must be completed by the code contributor before the Pull Request(PR) is submitted:
+
+**Code Complete** - Source code changes are complete for all items in the acceptance criteria in the issue supporting the story. In Tazama code is distributed amongst a number of different repositories for specific purposes. Code changes in a single repository should be linked to an issue in that repository. Similar changes that affect a number of different repositories, should be documented in an issue in each of those repositories separately.
+
+**Code Documentation** - Source code has been commented. Complex or compound statements should be explained with a comment, either a comment block (e.g. `/* comment block here */` in TypeScript) or an in-line comment (e.g. `// in-line comment here` in TypeScript). Every function in Tazama must be documented with a preceding [JSDocs docstring](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html).
+
+**Developer Documentation** - The readme.md file in every code repository must contain documentation in markdown and diagrams in Mermaid or editable `.svg` or `.png` images (see Draw.io guide) to explain how the code works. 
+
+**Unit testing** - Unit test cases have been created in Jest (https://jestjs.io/), executed and are working successfully. Follow [coverage guidelines](/Technical/unit-test-coverage.md). Will create spike where we find some Rule Engine that's difficult to unit test.
+
+**Automated Builds** - All code is included in automated builds and any updates to the build scripts have been completed and tested and checked in. Jenkins / CircleCI - Poly vs Mono repo
+
+**Processor performance benchmarking** Ensure that the Newman benchmark results have been presented on the PR as a comment. If you notice any spikes in the benchmark, please report the spike or reevaluate the implemented code, if you are using a Fork to contribute please follow: [contribution guidelines](/Technical/contribution-guidelines.md)
+
+
+
+**GitHub CI/CD** - Ensure that all GitHub workflows have completed successfully during PR checks.
+
+
+
+**Licensing comment** Add the following string as a comment ("SPDX-License-Identifier: Apache-2.0") at the top of every file in the organisation in GitHub that is capable of including a comment i.e. extensions="ts" "js" "env" "template" "eslintignore" "yaml" "properties" "npmrc" "editorconfig" "dockerignore" "gitignore" "prettierignore" "md" "helmignore" "Makefile" "sh" "npmignore" "plantuml" "yml".
+
+**Code Refactoring** - Source code has been refactored to make it comprehensive, maintainable and amenable to change (*unless agreed otherwise as part of refactoring existing legacy code).
+
+**Code Check-in** - Source code is checked in to source code control repository and PR process is followed
+
+**Code & Peer reviews** (pull requests) - These have been carried out and all improvements implemented and tests completed. Contributor to follow-up and ensure code gets merged in a reasonable time.
+
+**Logging** - Appropriate logging and log levels implemented [Logging framework](/Technical/Logging/The-Tazama-Logging-Framework.md) 
+
+**All acceptance criteria are met and Testing complete**
 
  - **Automated testing** - All existing automated tests have been run successfully
 
- - **Regression testing** – Suitable level of Regression testing has been carried out successfully
+ - **Regression testing** - Suitable level of Regression testing has been carried out successfully
 
-**Closure** - PR is closed, Automated tests ran, Pipeline built successfully, Automated deployments ran, THEN All finished user stories/tasks are marked complete/resolved. [Developer]
+
+
+**Closure** - PR is closed, Automated tests ran, Pipeline built successfully, Automated deployments ran, THEN All finished user stories/tasks are marked complete/resolved.
+
+
+Guide for maintainer
+
+**Architecture** - All new code conforms to the agreed architecture (*unless agreed otherwise as part of refactoring existing legacy code). 
 
 ### 5.3 Committing Your Changes
 
@@ -566,7 +671,25 @@ Information about regular community calls or meetings.
 Guidelines for contributing to project documentation.
 
 ### 7.2 Documentation Style Guide
-Style and formatting guidelines.
+
+Documentation is created in Markdown files. We recommend using LTeX – LanguageTool grammar/spell checking by Julian Valentin https://valentjn.github.io/ltex
+
+
+Image - link to drawIO
+
+Tone and Voice: Define the tone and voice of the documentation. For example, should it be formal or informal? Friendly or neutral? This helps ensure a consistent reading experience.
+Language and Grammar: Specify the language (e.g., American English, British English) and grammar rules to follow. Include guidelines on the use of contractions, passive vs. active voice, and punctuation.
+Terminology: Establish a glossary of terms specific to your project. This includes acronyms, abbreviations, and industry-specific jargon. Consistent use of terminology helps avoid confusion.
+Headings and Structure: Provide a standard structure for documents, including how to use headings, subheadings, and sections. This helps in organizing content logically and makes it easier to navigate.
+Code Formatting: Define how code snippets should be formatted and highlighted. Include guidelines on indentation, syntax highlighting, and commenting.
+Links and References: Set rules for linking to external resources, citing sources, and referencing other parts of the documentation. This includes guidelines on hyperlink text and formatting.
+Images and Media: Provide guidelines for using images, diagrams, and other media. This includes image resolution, file formats, and how to caption and reference images.
+Lists and Tables: Define the formatting for lists (bulleted, numbered) and tables. Include guidelines on when to use each and how to format them for clarity.
+Accessibility: Ensure your documentation is accessible to everyone, including people with disabilities. Provide guidelines on using alt text for images, accessible colors, and readable fonts.
+Version Control: Establish a process for versioning the documentation. This includes how to track changes, update documents, and manage different versions.
+Review and Approval: Define a process for reviewing and approving documentation. This includes who is responsible for reviewing, how feedback is provided, and how revisions are made.
+Contributing Guidelines: If your project accepts contributions from the community, provide clear guidelines on how to contribute to the documentation. This includes how to submit changes, the review process, and any style or formatting requirements for contributions.
+By establishing a comprehensive style guide, you can ensure that your documentation is consistent, clear, and professional, regardless of the number of contributors.
 
 ## 8. Reporting Bugs and Requesting Features
 ### 8.1 How to Report Bugs

@@ -65,7 +65,7 @@ Once data is ingested into the transaction history by the TMS API, the Event Dir
 
 ![Tazama rule and typology plane](../images/tazama-rule-and-typology-plane.png)
 
-Each rule processor that receives the trigger payload from the  Event Director evaluates the transaction and the historical behavior of its participants according to its specification and configuration. Rule processors are driven by a combination of parameters and result specifications to determine only one of a number of related outcomes. The rule outcome is then submitted to the typology processor for scoring.
+Each rule processor that receives the trigger payload from the Event Director evaluates the transaction and the historical behavior of its participants according to its specification and configuration. Rule processors are driven by a combination of parameters and result specifications to determine only one of a number of related outcomes. The rule outcome is then submitted to the typology processor for scoring.
 
 The typology processor assigns a weighting to each rule outcome as it is received based on the rule’s parent typologies’ configurations. Once all the rule results for a specific typology has been received, the typology adds all the weighted scores together into the typology score. The typology score can be evaluated against an “interdiction” threshold to determine if the client system should be instructed to block a transaction “in flight” and also an investigation threshold to trigger a review process at the end of the transaction evaluation. The typology processor is not currently configured to interdict the transaction when the threshold is breached; only investigations are commissioned once the evaluation of all the typologies are complete.
 
@@ -102,7 +102,7 @@ In this document, we will discuss how the various configuration documents are ex
 
 # 2. Configuration Management
 
-Configuration documents are essentially files that contain a processor-specific configuration object in JSON format. The recommended way to upload the configuration file to the appropriate configuration database (`networkMap` or `configuration`) and collection is via ArangoDB’s HTTP API that is deployed as standard during system deployment.
+Configuration documents are essentially files that contain a processor-specific configuration object in JSON format. The recommended way to upload the configuration file to the `configuration` collection is via ArangoDB’s HTTP API that is deployed as standard during system deployment.
 
 The system processes configurations in a specific order to evaluate an incoming transaction. Starting with the Event Director that interprets the network map for routing, then following with the rule processors that interpret their individual rule configurations to determine how to evaluate the transaction, and then concluding with the typology processor that uses a variety of typology configurations to summarize rule results into typologies (fraud or money laundering scenarios).
 
@@ -154,7 +154,7 @@ The combination of the `id` and `cfg` strings forms a unique identifier for ever
 
 Example of the rule configuration metadata:
 
-```
+```JSON
 {
   "id": "rule-001@1.0.0",
   "cfg": "1.0.0",
@@ -177,14 +177,14 @@ A rule processor’s parameters are used to define how a rule processor will ope
 
 Example of the `parameters` object:
 
-```
-  "config": {
-    "parameters": {
-      "maxQueryRange": 86400000,
-      "commission": 0.1,
-      "tolerance": 0.1
-    }
-  }
+```JSON
+"config": {
+    "parameters": {
+        "maxQueryRange": 86400000,
+        "commission": 0.1,
+        "tolerance": 0.1
+    }
+}
 ```
 
 If a rule processor does not use any parameters, the parameters object may either be empty (`parameters{}`) or omitted entirely.
@@ -211,17 +211,17 @@ Exit conditions cover a number of different exception conditions for rule proces
 
 Example of the `exitConditions` object:
 
-```
-  "config": {
-    "exitConditions": [
-      {
-        "subRuleRef": ".x00",
-        "reason": "Unsuccessful transaction"
-      },
-      {
-        "subRuleRef": ".x01",
-        "reason": "Insufficient transaction history"
-      }
+```JSON
+"config": {
+    "exitConditions": [
+        {
+            "subRuleRef": ".x00",
+            "reason": "Unsuccessful transaction"
+        },
+        {
+            "subRuleRef": ".x01",
+            "reason": "Insufficient transaction history"
+        }
     ]
 ```
 
@@ -231,8 +231,6 @@ Each exit condition contains the same attributes:
 | --- | --- |
 | `subRuleRef` | Every rule processor is capable of reporting a number of different outcomes, but only a single outcome from the complete set is ultimately delivered to the typology processor. Each outcome is defined by a unique sub-rule reference identifier to differentiate the delivered outcome from the others and also to allow the typology processor to apply a unique weighting to that specific outcome.<br><br> By convention, the exit condition sub-rule references are prefaced with an 'x'. |
 | `reason` | The reason provides a human-readable description of the result that accompanies the rule result to the eventual over-all evaluation result. Reason descriptions will be refined during future enhancements[^1] |
-
-
 
 #### The `.err` exit condition
 
@@ -270,26 +268,26 @@ A rule processor with a banded results configuration can have an unlimited numbe
 
 The rule result bands are specified in the `config` object in the rule configuration as an array of elements under a `bands` object:
 
-```
+```JSON
 "config": {
-  "bands": [
-    {
-      "subRuleRef": ".01",
-      "upperLimit": 86400000,
-      "reason": "Account is less than 1 day old"
-    },
-    {
-      "subRuleRef": ".02",
-      "lowerLimit": 86400000,
-      "upperLimit": 2592000000,
-      "reason": "Account is between 1 and 30 days old"
-    },
-    {
-      "subRuleRef": ".03",
-      "lowerLimit": 2592000000,
-      "reason": "Account is more than 30 days old"
-    }
-  ]
+    "bands": [
+        {
+            "subRuleRef": ".01",
+            "upperLimit": 86400000,
+            "reason": "Account is less than 1 day old"
+        },
+        {
+            "subRuleRef": ".02",
+            "lowerLimit": 86400000,
+            "upperLimit": 2592000000,
+            "reason": "Account is between 1 and 30 days old"
+        },
+        {
+            "subRuleRef": ".03",
+            "lowerLimit": 2592000000,
+            "reason": "Account is more than 30 days old"
+        }
+    ]
 }
 ```
 
@@ -326,24 +324,24 @@ Beyond the default “else” outcome, the cased rule processor configuration ca
 
 The rule result cases are specified in the `config` object in the rule configuration as an array of elements under a `cases` object:
 
-```
+```JSON
 "config": {
-  "cases": [
-    {
-      "subRuleRef": ".00",
-      "reason": "Value found is non-deterministic"
-    },
-    {
-      "value": "P2B",
-      "subRuleRef": ".01",
-      "reason": "The transaction is a merchant payment"
-    },
-    {
-      "value": "P2P",
-      "subRuleRef": ".02",
-      "reason": "The transaction is a peer-to-peer transfer"
-    }
-  ]
+    "cases": [
+        {
+            "subRuleRef": ".00",
+            "reason": "Value found is non-deterministic"
+        },
+        {
+            "value": "P2B",
+            "subRuleRef": ".01",
+            "reason": "The transaction is a merchant payment"
+        },
+        {
+            "value": "P2P",
+            "subRuleRef": ".02",
+            "reason": "The transaction is a peer-to-peer transfer"
+        }
+    ]
 }
 ```
 
@@ -777,8 +775,8 @@ When a new version of a configuration document is required, the updated version 
 
 | **Collection name** | **Processor Type** |
 | --- | --- |
-| `configuration` | [Rule processor overview - rule config](/product/rule-processor-overview-rule-config.md) |
-| `typologyExpression` | [Typologies](/product/typology-processing.md) |
+| `ruleConfiguration` | [Rule processor overview - rule config](/product/rule-processor-overview-rule-config.md) |
+| `typologyConfiguration` | [Typologies](/product/typology-processing.md) |
 | `transactionConfiguration` | [Transaction Aggregation and Decisioning](/product/transaction-aggregation-and-decisioning-processor.md) |
 
 Configuration documents can be posted to the appropriate collection via the ArangoDB API, either in bulk or one-by-one. When posting a new configuration for an existing processor, the database will not allow a user to submit a configuration for an "id" and "cfg" combination that already exists in the database: a new configuration must always be assigned a unique configuration version.
